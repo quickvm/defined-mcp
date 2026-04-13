@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+.ruff_cache/
+
+# Claude Code local settings (user-specific, not shared)
+.claude/settings.local.json

@@ -1,0 +1,48 @@
+[project]
+name = "defined-mcp"
+version = "0.1.0"
+description = "MCP server for the Defined Networking API"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=2.5.0",
+    "httpx>=0.28.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.9.0",
+    "typer>=0.15.0",
+    "rich>=14.0.0",
+]
+
+[project.scripts]
+defined-mcp = "defined_mcp.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.26.0",
+    "respx>=0.22.0",
+    "ruff>=0.11.0",
+    "ty>=0.0.1a0",
+]
+
+[tool.ruff]
+line-length = 119
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH"]
+
+# ty doesn't understand Pydantic's populate_by_name=True or pydantic-settings
+# env loading, producing false positives for aliased fields and Settings().
+# Suppress these until ty adds Pydantic support.
+[tool.ty.rules]
+unknown-argument = "ignore"
+missing-argument = "ignore"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
