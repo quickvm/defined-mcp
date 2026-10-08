@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, patch
 
+import respx
+from httpx import Response
+
+from defined_mcp.client import DefinedClient
 from defined_mcp.models import (
     FirewallRule,
     Host,
@@ -14,11 +19,16 @@ from defined_mcp.models import (
     Tag,
 )
 from defined_mcp.server import mcp
+from defined_mcp.settings import Settings
 from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_TAG,
 )
+
+if TYPE_CHECKING:
+    import pytest
 
 
 def _mock_list_response(data: list[Any]) -> Any:
@@ -247,6 +257,28 @@ class TestAtomicFirewallRules:
         assert update_data.firewall_rules[1].protocol == "TCP"
         assert update_data.firewall_rules[1].port_range is not None
         assert update_data.firewall_rules[1].port_range.from_port == 22
+
+    @respx.mock
+    async def test_add_firewall_rule_keeps_null_allowed_tags(
+        self, settings_env: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        role_id = SAMPLE_ROLE_NULL_TAGS["id"]
+        url = f"https://api.defined.net/v1/roles/{role_id}"
+        body = {"data": SAMPLE_ROLE_NULL_TAGS, "metadata": {}}
+        respx.get(url).mock(return_value=Response(200, json=body))
+        put = respx.put(url).mock(return_value=Response(200, json=body))
+        client = DefinedClient(Settings())
+        monkeypatch.setattr("defined_mcp.server._get_client", lambda: client)
+
+        from defined_mcp.server import add_firewall_rule
+
+        await add_firewall_rule(
+            role_id=role_id, protocol="TCP", port_from=17323, port_to=17323, allowed_tags='["agent-vault:allow"]'
+        )
+        rules = json.loads(put.calls[0].request.content)["firewallRules"]
+        assert rules[:2] == SAMPLE_ROLE_NULL_TAGS["firewallRules"]
+        assert rules[2]["allowedTags"] == ["agent-vault:allow"]
+        assert rules[2]["portRange"] == {"from": 17323, "to": 17323}
 
     @patch("defined_mcp.server._get_client")
     async def test_remove_firewall_rule(self, mock_client_fn: Any) -> None:

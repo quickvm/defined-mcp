@@ -24,6 +24,7 @@ from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_NETWORK,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_ROUTE,
     SAMPLE_ROUTE_LIST_ITEM,
     SAMPLE_TAG,
@@ -204,6 +205,16 @@ class TestRoles:
         resp = await client.list_roles()
         assert len(resp.data) == 1
         assert resp.data[0].firewall_rules[0].port_range is not None
+
+    @respx.mock
+    async def test_get_role_with_null_allowed_tags(self, client: DefinedClient) -> None:
+        role_id = SAMPLE_ROLE_NULL_TAGS["id"]
+        respx.get(f"https://api.defined.net/v1/roles/{role_id}").mock(
+            return_value=Response(200, json={"data": SAMPLE_ROLE_NULL_TAGS, "metadata": {}})
+        )
+        role = await client.get_role(role_id)
+        assert role.firewall_rules[0].allowed_tags is None
+        assert role.firewall_rules[1].allowed_tags == ["ssh:allow"]
 
     @respx.mock
     async def test_create_role(self, client: DefinedClient) -> None:

@@ -22,6 +22,7 @@ from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_NETWORK,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_ROUTE,
     SAMPLE_ROUTE_LIST_ITEM,
     SAMPLE_TAG,
@@ -126,6 +127,12 @@ class TestRole:
         assert rule0["allowedTags"] == ["env:prod", "tier:web"]
         assert rule0["allowedRoleID"] == "role-AAAABBBBCCCCDDDDEEEEFFFFF2"
 
+    def test_null_allowed_tags_round_trip_unchanged(self) -> None:
+        role = Role.model_validate(SAMPLE_ROLE_NULL_TAGS)
+        assert role.firewall_rules[0].allowed_tags is None
+        serialized = role.model_dump(mode="json", by_alias=True)
+        assert serialized["firewallRules"] == SAMPLE_ROLE_NULL_TAGS["firewallRules"]
+
 
 class TestTag:
     def test_parse_tag(self) -> None:
@@ -152,6 +159,12 @@ class TestRoute:
         assert "192.168.14.0/26" in route.routable_cidrs
         assert len(route.firewall_rules) == 1
         assert route.firewall_rules[0].local_cidr == "192.168.14.56/32"
+
+    def test_null_allowed_tags_round_trip_unchanged(self) -> None:
+        data = {**SAMPLE_ROUTE, "firewallRules": [{**SAMPLE_ROUTE["firewallRules"][0], "allowedTags": None}]}
+        route = Route.model_validate(data)
+        assert route.firewall_rules[0].allowed_tags is None
+        assert route.model_dump(mode="json", by_alias=True)["firewallRules"] == data["firewallRules"]
 
     def test_parse_route_list_item(self) -> None:
         item = RouteListItem.model_validate(SAMPLE_ROUTE_LIST_ITEM)

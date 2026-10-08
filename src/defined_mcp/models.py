@@ -19,19 +19,23 @@ class PortRange(BaseModel):
 
 
 class FirewallRule(BaseModel):
-    """A firewall rule on a role."""
+    """A firewall rule on a role.
+
+    The API returns allowedTags as null on rules without tags. None is kept as-is so that
+    read-modify-write tools send existing rules back unchanged.
+    """
 
     model_config = ConfigDict(populate_by_name=True)
 
     protocol: str
     description: str = ""
     allowed_role_id: str | None = Field(default=None, alias="allowedRoleID")
-    allowed_tags: list[str] = Field(default_factory=list, alias="allowedTags")
+    allowed_tags: list[str] | None = Field(default_factory=list, alias="allowedTags")
     port_range: PortRange | None = Field(default=None, alias="portRange")
 
 
 class FirewallRuleWithCIDR(BaseModel):
-    """A firewall rule on a route, with localCIDR."""
+    """A firewall rule on a route, with localCIDR. allowedTags may be null, as on FirewallRule."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -39,7 +43,7 @@ class FirewallRuleWithCIDR(BaseModel):
     description: str = ""
     local_cidr: str | None = Field(default=None, alias="localCIDR")
     allowed_role_id: str | None = Field(default=None, alias="allowedRoleID")
-    allowed_tags: list[str] = Field(default_factory=list, alias="allowedTags")
+    allowed_tags: list[str] | None = Field(default_factory=list, alias="allowedTags")
     port_range: PortRange | None = Field(default=None, alias="portRange")
 
 
