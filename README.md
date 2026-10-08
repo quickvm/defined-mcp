@@ -11,7 +11,7 @@ uv tool install git+https://github.com/quickvm/defined-mcp.git
 To install a specific version or branch:
 
 ```bash
-uv tool install git+https://github.com/quickvm/defined-mcp.git@main
+uv tool install git+https://github.com/quickvm/defined-mcp.git@master
 ```
 
 For local development:
@@ -67,7 +67,8 @@ defined-mcp serve
 - `create_host_and_enrollment_code` — Create host + enrollment code
 
 ### Roles & Firewall Rules
-- `list_roles` / `get_role` — List/get roles with firewall rules
+- `list_roles` — List roles with firewall rule and host counts
+- `get_role` — Get a role with its firewall rules
 - `create_role` / `update_role` — Create/update roles (full replacement)
 - `delete_role` — Delete a role
 - `add_firewall_rule` — Add a firewall rule to a role (flat params, no JSON)
@@ -85,7 +86,8 @@ defined-mcp serve
 - `create_network` / `update_network` — Create/update networks
 
 ### Routes
-- `list_routes` / `get_route` — List/get routes with firewall rules
+- `list_routes` — List routes with firewall rule counts
+- `get_route` — Get a route with its firewall rules
 - `create_route` / `update_route` — Create/update routes (full replacement)
 - `delete_route` — Delete a route
 - `add_route_firewall_rule` — Add a firewall rule to a route
@@ -110,7 +112,7 @@ cp -r .claude/skills/network-architect ~/.claude/skills/
 ### `/network-architect audit`
 
 Performs a security and configuration audit of your Defined Networking account.
-Fetches all networks, roles, tags, and hosts, then reports:
+Fetches all networks, roles, tags, and hosts, plus each role's firewall rules, then reports:
 
 - Roles with missing or overly permissive firewall rules
 - Dead tags (zero hosts assigned)

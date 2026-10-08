@@ -91,6 +91,23 @@ class Host(BaseModel):
     metadata: HostMetadata = Field(default_factory=HostMetadata)
 
 
+class RoleListItem(BaseModel):
+    """A role as returned by list (no firewall rules, just counts).
+
+    The counts have no default, so a response without them fails validation instead of reading as zero.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: str
+    name: str
+    description: str = ""
+    created_at: str = Field(alias="createdAt")
+    modified_at: str = Field(alias="modifiedAt")
+    firewall_rules_count: int = Field(alias="firewallRulesCount")
+    host_count: int = Field(alias="hostCount")
+
+
 class Role(BaseModel):
     """A role with firewall rules."""
 
