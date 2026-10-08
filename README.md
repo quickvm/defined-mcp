@@ -11,7 +11,7 @@ uv tool install git+https://github.com/quickvm/defined-mcp.git
 To install a specific version or branch:
 
 ```bash
-uv tool install git+https://github.com/quickvm/defined-mcp.git@main
+uv tool install git+https://github.com/quickvm/defined-mcp.git@master
 ```
 
 For local development:
