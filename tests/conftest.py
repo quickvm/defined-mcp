@@ -54,6 +54,31 @@ SAMPLE_ROLE: dict[str, Any] = {
     ],
 }
 
+# The API sends allowedTags: null, not [], on rules without tags (seen on a live role).
+SAMPLE_ROLE_NULL_TAGS: dict[str, Any] = {
+    "id": "role-AAAABBBBCCCCDDDDEEEEFFFFF3",
+    "name": "null-tags",
+    "description": "",
+    "createdAt": "2025-01-01T00:00:00Z",
+    "modifiedAt": "2025-01-01T00:00:00Z",
+    "firewallRules": [
+        {
+            "protocol": "ICMP",
+            "description": "Ping",
+            "allowedRoleID": None,
+            "allowedTags": None,
+            "portRange": None,
+        },
+        {
+            "protocol": "TCP",
+            "description": "SSH",
+            "allowedRoleID": None,
+            "allowedTags": ["ssh:allow"],
+            "portRange": {"from": 22, "to": 22},
+        },
+    ],
+}
+
 SAMPLE_TAG: dict[str, Any] = {
     "name": "env:prod",
     "description": "Production hosts",
