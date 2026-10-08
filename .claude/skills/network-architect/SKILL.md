@@ -21,16 +21,18 @@ Perform a security and configuration audit of the user's Defined Networking acco
 
 1. **Gather state** — call these in parallel:
    - `list_networks`
-   - `list_roles`
-   - `list_tags`
+   - `list_roles` (paginate through all pages)
+   - `list_tags` (paginate through all pages)
    - `list_hosts` (paginate through all pages)
 
-2. **Analyze and report** each of these categories:
+2. **Fetch firewall rules** — `list_roles` returns each role's `firewallRulesCount` and `hostCount`, not its rules. Call `get_role` in parallel for every role with `firewallRulesCount` > 0, and base every firewall finding on those results.
+
+3. **Analyze and report** each of these categories:
 
    **Roles**
-   - Roles with zero firewall rules (wide open to nothing — probably needs rules or is unused)
-   - Roles with overly permissive rules (protocol=ANY, no portRange, no allowedRoleID, no allowedTags)
-   - Roles assigned to zero hosts (dead roles)
+   - Roles with zero firewall rules (`firewallRulesCount` is 0 — wide open to nothing, probably needs rules or is unused)
+   - Roles with overly permissive rules (protocol=ANY, no portRange, no allowedRoleID, allowedTags null or empty)
+   - Roles assigned to zero hosts (`hostCount` is 0 — dead roles)
 
    **Tags**
    - Tags with zero hosts assigned (dead tags — may be stale)
@@ -49,7 +51,7 @@ Perform a security and configuration audit of the user's Defined Networking acco
    - Identify roles that allow traffic from ANY role (no allowedRoleID restriction)
    - Identify rules that allow ALL ports (no portRange)
 
-3. **Output format** — present as a structured report with sections. Use tables where appropriate. Flag issues by severity:
+4. **Output format** — present as a structured report with sections. Use tables where appropriate. Flag issues by severity:
    - **Warning**: Likely misconfiguration (empty roles, permissive rules)
    - **Info**: Worth reviewing (unused tags, stale hosts)
    - **OK**: Passing checks
@@ -70,7 +72,7 @@ Interactive network policy design session. Help the user plan their role and tag
 
 ### Steps
 
-1. **Understand current state** — fetch roles, tags, hosts, and existing firewall rules. Summarize what exists.
+1. **Understand current state** — fetch roles, tags, and hosts, then `get_role` for each role's firewall rules (`list_roles` does not include them). Summarize what exists.
 
 2. **Ask the user**:
    - What services run on your network? (SSH, HTTP/S, databases, monitoring, etc.)
@@ -111,7 +113,7 @@ Implement a network design. This mode expects you to have a design from the `des
 
 ### Safety protocol
 
-1. **Read current state first** — fetch the role/tag/host you're about to modify.
+1. **Read current state first** — fetch the role/tag/host you're about to modify with `get_role`/`get_tag`/`get_host`.
 2. **Show a diff** — for each change, show what exists now vs what will exist after.
 3. **Ask for confirmation** before executing destructive or bulk changes.
 4. **Use atomic tools** — prefer `add_firewall_rule`, `remove_firewall_rule`, `add_host_tag`, `remove_host_tag`, `add_tag_config_override`, `remove_tag_config_override` over the bulk `update_*` tools.

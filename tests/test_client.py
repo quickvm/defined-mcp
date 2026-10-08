@@ -24,6 +24,7 @@ from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_NETWORK,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_LIST_ITEM,
     SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_ROUTE,
     SAMPLE_ROUTE_LIST_ITEM,
@@ -199,12 +200,13 @@ class TestRoles:
         respx.get("https://api.defined.net/v1/roles").mock(
             return_value=Response(
                 200,
-                json={"data": [SAMPLE_ROLE], "metadata": PAGINATION_METADATA},
+                json={"data": [SAMPLE_ROLE_LIST_ITEM], "metadata": PAGINATION_METADATA},
             )
         )
         resp = await client.list_roles()
         assert len(resp.data) == 1
-        assert resp.data[0].firewall_rules[0].port_range is not None
+        assert resp.data[0].firewall_rules_count == 2
+        assert resp.data[0].host_count == 3
 
     @respx.mock
     async def test_get_role_with_null_allowed_tags(self, client: DefinedClient) -> None:
