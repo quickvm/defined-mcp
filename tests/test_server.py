@@ -23,6 +23,7 @@ from defined_mcp.settings import Settings
 from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_LIST_ITEM,
     SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_TAG,
 )
@@ -96,6 +97,20 @@ class TestReadOnlyTools:
         result = await list_hosts()
         assert len(result["data"]) == 1
         assert result["data"][0]["name"] == "test-host"
+
+    @respx.mock
+    async def test_list_roles_passes_counts_through_without_rules(
+        self, settings_env: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        body = {"data": [SAMPLE_ROLE_LIST_ITEM], "metadata": {}}
+        respx.get("https://api.defined.net/v1/roles").mock(return_value=Response(200, json=body))
+        client = DefinedClient(Settings())
+        monkeypatch.setattr("defined_mcp.server._get_client", lambda: client)
+
+        from defined_mcp.server import list_roles
+
+        result = await list_roles()
+        assert result["data"] == [SAMPLE_ROLE_LIST_ITEM]
 
     @patch("defined_mcp.server._get_client")
     async def test_get_role(self, mock_client_fn: Any) -> None:

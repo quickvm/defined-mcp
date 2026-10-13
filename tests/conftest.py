@@ -79,6 +79,17 @@ SAMPLE_ROLE_NULL_TAGS: dict[str, Any] = {
     ],
 }
 
+# GET /v1/roles sends counts instead of firewallRules, unlike its OpenAPI spec (seen on a live org).
+SAMPLE_ROLE_LIST_ITEM: dict[str, Any] = {
+    "id": "role-AAAABBBBCCCCDDDDEEEEFFFFF1",
+    "name": "test-role",
+    "description": "A test role",
+    "createdAt": "2025-01-01T00:00:00Z",
+    "modifiedAt": "2025-01-01T00:00:00Z",
+    "firewallRulesCount": 2,
+    "hostCount": 3,
+}
+
 SAMPLE_TAG: dict[str, Any] = {
     "name": "env:prod",
     "description": "Production hosts",

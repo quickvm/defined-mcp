@@ -399,7 +399,9 @@ async def list_roles(
     page_size: int | None = None,
     include_counts: bool = False,
 ) -> dict[str, Any]:
-    """List roles.
+    """List roles (summary with firewallRulesCount and hostCount, without firewall rules).
+
+    Call get_role for each role whose firewall rules you need.
 
     Args:
         cursor: Pagination cursor.

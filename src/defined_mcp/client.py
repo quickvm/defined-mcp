@@ -18,6 +18,7 @@ from defined_mcp.models import (
     PaginationMetadata,
     Role,
     RoleCreate,
+    RoleListItem,
     RoleUpdate,
     Route,
     RouteCreate,
@@ -174,10 +175,10 @@ class DefinedClient:
         cursor: str | None = None,
         page_size: int | None = None,
         include_counts: bool = False,
-    ) -> ListResponse[Role]:
+    ) -> ListResponse[RoleListItem]:
         params = self._pagination_params(cursor, page_size, include_counts)
         body = await self._request("GET", "/v1/roles", params=params)
-        roles = [Role.model_validate(r) for r in body["data"]]
+        roles = [RoleListItem.model_validate(r) for r in body["data"]]
         meta = PaginationMetadata.model_validate(body.get("metadata", {}))
         return ListResponse(roles, meta)
 

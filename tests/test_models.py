@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from defined_mcp.models import (
     AuditLog,
     FirewallRule,
@@ -12,6 +15,7 @@ from defined_mcp.models import (
     PortRange,
     Role,
     RoleCreate,
+    RoleListItem,
     RoleUpdate,
     Route,
     RouteListItem,
@@ -22,6 +26,7 @@ from tests.conftest import (
     SAMPLE_HOST,
     SAMPLE_NETWORK,
     SAMPLE_ROLE,
+    SAMPLE_ROLE_LIST_ITEM,
     SAMPLE_ROLE_NULL_TAGS,
     SAMPLE_ROUTE,
     SAMPLE_ROUTE_LIST_ITEM,
@@ -132,6 +137,17 @@ class TestRole:
         assert role.firewall_rules[0].allowed_tags is None
         serialized = role.model_dump(mode="json", by_alias=True)
         assert serialized["firewallRules"] == SAMPLE_ROLE_NULL_TAGS["firewallRules"]
+
+    def test_parse_role_list_item(self) -> None:
+        item = RoleListItem.model_validate(SAMPLE_ROLE_LIST_ITEM)
+        assert item.firewall_rules_count == 2
+        assert item.host_count == 3
+
+    @pytest.mark.parametrize("missing", ["firewallRulesCount", "hostCount"])
+    def test_role_list_item_without_count_is_rejected(self, missing: str) -> None:
+        data = {k: v for k, v in SAMPLE_ROLE_LIST_ITEM.items() if k != missing}
+        with pytest.raises(ValidationError, match=missing):
+            RoleListItem.model_validate(data)
 
 
 class TestTag:
